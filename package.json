@@ -1,0 +1,89 @@
+{
+  "name": "@blvckcoder/env-sync",
+  "version": "0.0.1",
+  "description": "This is a visual studio code extension that allows you to sync local env files across projects in a secure way. You login with your email and use the env file for the current project is sutomatically synced",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:envsync.login",
+    "onCommand:envsync.sync",
+    "workspaceContains:**/.env"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "envsync.login",
+        "title": "EnvSync: Login"
+      },
+      {
+        "command": "envsync.logout",
+        "title": "EnvSync: Logout"
+      },
+      {
+        "command": "envsync.sync",
+        "title": "EnvSync: Sync .env Files"
+      },
+      {
+        "command": "envsync.push",
+        "title": "EnvSync: Push Current .env"
+      },
+      {
+        "command": "envsync.pull",
+        "title": "EnvSync: Pull Latest .env"
+      }
+    ],
+    "configuration": {
+      "title": "EnvSync",
+      "properties": {
+        "envsync.autoSync": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically sync .env files when changes are detected"
+        },
+        "envsync.filePatterns": {
+          "type": "array",
+          "default": [".env", ".env.local", ".env.development"],
+          "description": "Patterns of environment files to sync"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "crypto-js": "^4.1.1",
+    "node-machine-id": "^1.1.12"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.60.0",
+    "typescript": "^4.5.4",
+    "webpack": "^5.76.0"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kunoacc/env-sync.git"
+  },
+  "keywords": [
+    "[env",
+    "sync",
+    "code",
+    "vs["
+  ],
+  "author": "nelson@nelsonatuonwu.me",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kunoacc/env-sync/issues"
+  },
+  "homepage": "https://github.com/kunoacc/env-sync#readme"
+}
