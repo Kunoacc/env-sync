@@ -1,8 +1,7 @@
 {
   "name": "@blvckcoder/env-sync",
   "version": "0.0.1",
-  "description": "This is a visual studio code extension that allows you to sync local env files across projects in a secure way. You login with your email and use the env file for the current project is sutomatically synced",
-  "version": "0.1.0",
+  "description": "This is a visual studio code extension that allows you to sync local env files across projects in a secure way. You login with your email and use the env file for the current project is automatically synced",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -48,7 +47,11 @@
         },
         "envsync.filePatterns": {
           "type": "array",
-          "default": [".env", ".env.local", ".env.development"],
+          "default": [
+            ".env",
+            ".env.local",
+            ".env.development"
+          ],
           "description": "Patterns of environment files to sync"
         }
       }
