@@ -6,7 +6,7 @@ import { machineIdSync } from 'node-machine-id';
 import axios from 'axios';
 import { HistoryProvider, registerHistoryView } from './views/historyProvider';
 import { encrypt, decrypt, createPassphrase, computeHash, isLegacyFormat } from './utils/crypto';
-import { getProjectIdentifier, findEnvFiles, getRelativePath } from './utils/project';
+import { getSavedProjectId, saveProjectId, generateProjectId, findEnvFiles, getRelativePath } from './utils/project';
 
 import * as legacyCrypto from 'crypto-js';
 
@@ -283,7 +283,9 @@ async function syncCommand() {
     return;
   }
   
-  const projectId = getProjectIdentifier();
+  const projectId = await getOrSelectProject();
+  if (!projectId) return;
+  
   const envFiles = await findEnvFiles();
   
   if (envFiles.length === 0) {
@@ -330,7 +332,9 @@ async function pushCommand(fileItem?: any) {
     envFile = await selectEnvFile();
     if (!envFile) return;
     
-    const projectId = getProjectIdentifier();
+    const projectId = await getOrSelectProject();
+    if (!projectId) return;
+    
     await pushEnvFile(envFile, projectId);
   }
   
@@ -343,7 +347,9 @@ async function pullCommand() {
   const envFile = await selectEnvFile();
   if (!envFile) return;
   
-  const projectId = getProjectIdentifier();
+  const projectId = await getOrSelectProject();
+  if (!projectId) return;
+  
   await pullEnvFile(envFile, projectId);
   
   vscode.commands.executeCommand('envsync.refreshHistory');
@@ -357,6 +363,88 @@ function updateStatusBar() {
     statusBarItem.text = '$(sync) EnvSync';
     statusBarItem.tooltip = 'Not logged in';
   }
+}
+
+interface Project {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+async function fetchUserProjects(): Promise<Project[]> {
+  if (!accessToken) return [];
+  
+  try {
+    const response = await axios.get(`${getApiUrl()}/files`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    return response.data.projects || [];
+  } catch {
+    return [];
+  }
+}
+
+async function getOrSelectProject(): Promise<string | null> {
+  const savedId = getSavedProjectId();
+  if (savedId) {
+    return savedId;
+  }
+  
+  return selectProject();
+}
+
+async function selectProject(): Promise<string | null> {
+  const projects = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: 'Loading projects...' },
+    () => fetchUserProjects()
+  );
+  
+  const username = userEmail.split('@')[0];
+  const suggestedId = generateProjectId(username);
+  
+  const CREATE_NEW = '$(add) Create new project';
+  
+  const items: vscode.QuickPickItem[] = [
+    { label: CREATE_NEW, description: `Suggested: ${suggestedId}` },
+    ...projects.map(p => ({
+      label: p.name,
+      description: `Last updated: ${new Date(p.updated_at).toLocaleDateString()}`
+    }))
+  ];
+  
+  const selected = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Select a project to sync with or create a new one',
+    title: 'EnvSync: Choose Project'
+  });
+  
+  if (!selected) return null;
+  
+  if (selected.label === CREATE_NEW) {
+    const newName = await vscode.window.showInputBox({
+      prompt: 'Enter project name',
+      value: suggestedId,
+      validateInput: (value) => {
+        if (!value || value.trim().length < 2) {
+          return 'Project name must be at least 2 characters';
+        }
+        if (!/^[a-zA-Z0-9][a-zA-Z0-9/_-]*$/.test(value)) {
+          return 'Project name can only contain letters, numbers, hyphens, underscores, and slashes';
+        }
+        return null;
+      }
+    });
+    
+    if (!newName) return null;
+    
+    saveProjectId(newName.trim());
+    vscode.window.showInformationMessage(`Project "${newName.trim()}" configured for this workspace`);
+    return newName.trim();
+  }
+  
+  saveProjectId(selected.label);
+  vscode.window.showInformationMessage(`Linked to project "${selected.label}"`);
+  return selected.label;
 }
 
 function ensureLoggedIn(): boolean {
@@ -568,7 +656,8 @@ function setupFileWatchers(context: vscode.ExtensionContext) {
       
       const timer = setTimeout(async () => {
         debounceTimers.delete(filePath);
-        const projectId = getProjectIdentifier();
+        const projectId = getSavedProjectId();
+        if (!projectId) return;
         await checkAndSyncFile(filePath, projectId);
         vscode.commands.executeCommand('envsync.refreshHistory');
       }, 1000);

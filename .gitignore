@@ -5,4 +5,5 @@ dist/
 .env
 .env.local
 .env.development
+.envsync.json
 supabase/.env.local

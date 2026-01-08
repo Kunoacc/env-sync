@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { getProjectIdentifier, findEnvFiles } from '../utils/project';
+import { getSavedProjectId, findEnvFiles } from '../utils/project';
 import { decrypt, isLegacyFormat, computeHash } from '../utils/crypto';
 import { machineIdSync } from 'node-machine-id';
 import * as legacyCrypto from 'crypto-js';
@@ -102,7 +102,18 @@ export class HistoryProvider implements vscode.TreeDataProvider<HistoryItem> {
   }
 
   private async getEnvFiles(): Promise<HistoryItem[]> {
-    const projectId = getProjectIdentifier();
+    const projectId = getSavedProjectId();
+    
+    if (!projectId) {
+      return [new HistoryItem(
+        'Run "EnvSync: Push" to configure project',
+        vscode.TreeItemCollapsibleState.None,
+        'file',
+        '',
+        ''
+      )];
+    }
+    
     const files = await findEnvFiles();
     
     if (files.length === 0) {

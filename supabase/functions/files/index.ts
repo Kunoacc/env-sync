@@ -52,10 +52,33 @@ Deno.serve(async (req: Request) => {
   }
 
   const url = new URL(req.url);
-  const pathParts = url.pathname.replace('/files/', '').split('/');
+  const pathParts = url.pathname.replace('/files/', '').replace('/files', '').split('/').filter(Boolean);
   const projectName = decodeURIComponent(pathParts[0] || '');
   const fileName = decodeURIComponent(pathParts[1] || '');
   const action = pathParts[2] || '';
+
+  if (!projectName && req.method === 'GET') {
+    try {
+      const { data: projects, error } = await supabase
+        .from('projects')
+        .select('id, name, created_at, updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      return new Response(
+        JSON.stringify({ projects: projects || [] }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      console.error('List projects error:', error);
+      return new Response(
+        JSON.stringify({ error: 'Failed to list projects' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+  }
 
   if (!projectName) {
     return new Response(

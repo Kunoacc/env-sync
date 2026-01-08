@@ -1,45 +1,71 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as crypto from 'crypto';
 
-export function getProjectIdentifier(workspaceFolder?: vscode.WorkspaceFolder): string {
+const CONFIG_FILE = '.envsync.json';
+
+export interface EnvSyncConfig {
+  projectId: string;
+}
+
+export function getConfigPath(workspaceFolder?: vscode.WorkspaceFolder): string {
   const folder = workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
-  
+  if (!folder) {
+    throw new Error('No workspace folder open');
+  }
+  return path.join(folder.uri.fsPath, CONFIG_FILE);
+}
+
+export function readConfig(workspaceFolder?: vscode.WorkspaceFolder): EnvSyncConfig | null {
+  try {
+    const configPath = getConfigPath(workspaceFolder);
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+    const content = fs.readFileSync(configPath, 'utf8');
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+export function writeConfig(config: EnvSyncConfig, workspaceFolder?: vscode.WorkspaceFolder): void {
+  const configPath = getConfigPath(workspaceFolder);
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+}
+
+export function getSavedProjectId(workspaceFolder?: vscode.WorkspaceFolder): string | null {
+  const config = readConfig(workspaceFolder);
+  return config?.projectId ?? null;
+}
+
+export function saveProjectId(projectId: string, workspaceFolder?: vscode.WorkspaceFolder): void {
+  writeConfig({ projectId }, workspaceFolder);
+}
+
+export function generateProjectId(username: string, workspaceFolder?: vscode.WorkspaceFolder): string {
+  const folder = workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
   if (!folder) {
     throw new Error('No workspace folder open');
   }
   
-  const packageJsonName = getPackageJsonName(folder.uri.fsPath);
-  if (packageJsonName) {
-    return packageJsonName;
-  }
+  const projectName = getPackageJsonName(folder.uri.fsPath) ?? path.basename(folder.uri.fsPath);
+  const sanitized = projectName.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
   
-  const folderName = path.basename(folder.uri.fsPath);
-  const pathHash = crypto
-    .createHash('sha256')
-    .update(folder.uri.fsPath)
-    .digest('hex')
-    .substring(0, 8);
-  
-  return `${folderName}-${pathHash}`;
+  return `${username}/${sanitized}`;
 }
 
 function getPackageJsonName(folderPath: string): string | null {
   try {
     const packageJsonPath = path.join(folderPath, 'package.json');
-    
     if (!fs.existsSync(packageJsonPath)) {
       return null;
     }
-    
     const content = fs.readFileSync(packageJsonPath, 'utf8');
     const packageJson = JSON.parse(content);
-    
     if (typeof packageJson.name === 'string' && packageJson.name.trim()) {
       return packageJson.name.trim();
     }
-    
     return null;
   } catch {
     return null;
