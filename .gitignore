@@ -1,4 +1,8 @@
 node_modules
+dist/
+*.vsix
+
 .env
 .env.local
 .env.development
+supabase/.env.local
