@@ -1,6 +1,8 @@
 name: Release
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       deploy_backend:
@@ -8,53 +10,73 @@ on:
         required: true
         default: true
         type: boolean
-      publish_extension:
-        description: 'Publish to VS Code Marketplace'
-        required: true
-        default: true
-        type: boolean
 
 jobs:
-  build:
-    name: Build Extension
+  release:
+    name: Build & Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.check.outputs.released }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from package.json
+        id: version
+        run: echo "version=v$(bun -e "console.log(require('./package.json').version)")" >> $GITHUB_OUTPUT
+      
+      - name: Check if tag exists
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "released=true" >> $GITHUB_OUTPUT
+            echo "Tag ${{ steps.version.outputs.version }} already exists, skipping release"
+          else
+            echo "released=false" >> $GITHUB_OUTPUT
+            echo "Will create release ${{ steps.version.outputs.version }}"
+          fi
       
       - name: Setup Node.js
+        if: steps.check.outputs.released == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: '21'
       
       - name: Setup Bun
+        if: steps.check.outputs.released == 'false'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
           
-      - name: Get version
-        id: version
-        run: echo "version=$(bun -e "console.log(require('./package.json').version)")" >> $GITHUB_OUTPUT
-          
       - name: Install dependencies
+        if: steps.check.outputs.released == 'false'
         run: bun install
         
       - name: Build extension
+        if: steps.check.outputs.released == 'false'
         run: bun run build
         
       - name: Package extension
+        if: steps.check.outputs.released == 'false'
         run: bun run package
         
-      - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        if: steps.check.outputs.released == 'false'
+        uses: softprops/action-gh-release@v2
         with:
-          name: envsync-${{ steps.version.outputs.version }}
-          path: "*.vsix"
+          tag_name: ${{ steps.version.outputs.version }}
+          name: EnvSync ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: "*.vsix"
 
   deploy-backend:
     name: Deploy Supabase
-    if: ${{ inputs.deploy_backend }}
+    needs: release
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_backend }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,10 +96,10 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
-  publish:
-    name: Publish Extension
-    if: ${{ inputs.publish_extension }}
-    needs: [build, deploy-backend]
+  publish-marketplace:
+    name: Publish to Marketplace
+    needs: release
+    if: needs.release.outputs.released == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,10 +117,12 @@ jobs:
       - name: Install dependencies
         run: bun install
           
-      - name: Download VSIX
-        uses: actions/download-artifact@v4
-        with:
-          name: envsync-${{ needs.build.outputs.version }}
+      - name: Download release asset
+        run: gh release download ${{ needs.release.outputs.version }} --pattern "*.vsix"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Publish to VS Code Marketplace
-        run: bunx vsce publish -p ${{ secrets.VSCE_PAT }}
+        run: bunx vsce publish --packagePath *.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

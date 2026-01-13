@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -34,10 +32,3 @@ jobs:
         
       - name: Package extension
         run: bun run package
-        
-      - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: envsync-vsix
-          path: "*.vsix"
-          retention-days: 30
