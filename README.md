@@ -187,10 +187,10 @@ To use your own Supabase instance:
 ### Build
 
 ```bash
-npm install
-npm run compile  # Type-check
-npm run build    # Bundle with webpack
-npm run package  # Create .vsix
+bun install
+bun run compile  # Type-check
+bun run build    # Bundle with webpack
+bun run package  # Create .vsix
 ```
 
 ### Deploy Backend
