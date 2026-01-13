@@ -38,7 +38,7 @@ jobs:
         run: echo "version=$(bun -e "console.log(require('./package.json').version)")" >> $GITHUB_OUTPUT
           
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
         
       - name: Build extension
         run: bun run build
@@ -93,7 +93,7 @@ jobs:
           bun-version: latest
           
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
           
       - name: Download VSIX
         uses: actions/download-artifact@v4

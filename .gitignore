@@ -7,3 +7,10 @@ dist/
 .env.development
 .envsync.json
 supabase/.env.local
+
+# Lockfiles (bun regenerates on install)
+bun.lockb
+package-lock.json
+
+# Supabase temp files
+supabase/.temp/
