@@ -1,0 +1,17 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules
+src
+supabase
+scripts
+*.ts
+*.map
+tsconfig.json
+webpack.config.js
+bun.lockb
+package-lock.json
+*.vsix
+.envsync.json

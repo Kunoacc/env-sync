@@ -1,8 +1,9 @@
 {
-  "name": "@blvckcoder/env-sync",
+  "name": "env-sync",
+  "displayName": "EnvSync",
   "version": "0.0.1",
-  "description": "This is a visual studio code extension that allows you to sync local env files across projects in a secure way. You login with your email and use the env file for the current project is sutomatically synced",
-  "version": "0.1.0",
+  "publisher": "kunoacc",
+  "description": "Sync local .env files across projects securely via cloud storage with version history",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -41,6 +42,11 @@
     "configuration": {
       "title": "EnvSync",
       "properties": {
+        "envsync.apiUrl": {
+          "type": "string",
+          "default": "https://bryhohgvcdntkgakggzb.supabase.co/functions/v1",
+          "description": "API URL for EnvSync backend (Supabase Functions URL)"
+        },
         "envsync.autoSync": {
           "type": "boolean",
           "default": false,
@@ -48,37 +54,83 @@
         },
         "envsync.filePatterns": {
           "type": "array",
-          "default": [".env", ".env.local", ".env.development"],
+          "default": [
+            ".env",
+            ".env.local",
+            ".env.development"
+          ],
           "description": "Patterns of environment files to sync"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "envsync",
+          "title": "EnvSync",
+          "icon": "$(sync)"
+        }
+      ]
+    },
+    "views": {
+      "envsync": [
+        {
+          "id": "envsyncHistory",
+          "name": "Sync History"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "envsync.refreshHistory",
+          "when": "view == envsyncHistory",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
+    "axios": "^1.8.4",
     "crypto-js": "^4.1.1",
+    "date-fns": "^4.1.0",
     "node-machine-id": "^1.1.12"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^16.11.7",
     "@types/vscode": "^1.60.0",
+    "@vscode/vsce": "^2.22.0",
+    "ovsx": "^0.8.0",
+    "ts-loader": "^9.5.4",
     "typescript": "^4.5.4",
-    "webpack": "^5.76.0"
+    "webpack": "^5.76.0",
+    "webpack-cli": "^6.0.1"
   },
   "scripts": {
     "build": "webpack --mode production",
-    "watch": "webpack --mode development --watch"
+    "watch": "webpack --mode development --watch",
+    "compile": "tsc --noEmit && bun run build",
+    "lint": "echo 'No linter configured'",
+    "test": "echo 'No tests configured'",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "supabase:start": "cd supabase && supabase start",
+    "supabase:stop": "cd supabase && supabase stop",
+    "supabase:functions": "cd supabase && supabase functions serve"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kunoacc/env-sync.git"
   },
   "keywords": [
-    "[env",
+    "env",
     "sync",
-    "code",
-    "vs["
+    "environment",
+    "variables",
+    "dotenv",
+    "secrets"
   ],
   "author": "nelson@nelsonatuonwu.me",
   "license": "MIT",
