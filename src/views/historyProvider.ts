@@ -9,7 +9,7 @@ import * as legacyCrypto from 'crypto-js';
 
 function getApiUrl(): string {
   const config = vscode.workspace.getConfiguration('envsync');
-  return config.get<string>('apiUrl') ?? 'https://your-project.supabase.co/functions/v1';
+  return config.get<string>('apiUrl') ?? 'https://bryhohgvcdntkgakggzb.supabase.co/functions/v1';
 }
 
 export class HistoryItem extends vscode.TreeItem {

@@ -14,3 +14,4 @@ webpack.config.js
 bun.lockb
 package-lock.json
 *.vsix
+.envsync.json

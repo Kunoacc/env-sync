@@ -44,7 +44,7 @@
       "properties": {
         "envsync.apiUrl": {
           "type": "string",
-          "default": "",
+          "default": "https://bryhohgvcdntkgakggzb.supabase.co/functions/v1",
           "description": "API URL for EnvSync backend (Supabase Functions URL)"
         },
         "envsync.autoSync": {
