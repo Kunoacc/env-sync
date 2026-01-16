@@ -77,7 +77,21 @@ export async function findEnvFiles(patterns?: string[]): Promise<string[]> {
   if (!workspaceFolders) return [];
   
   const config = vscode.workspace.getConfiguration('envsync');
-  const filePatterns = patterns ?? config.get<string[]>('filePatterns') ?? ['.env', '.env.local', '.env.development'];
+  const filePatterns = patterns ?? config.get<string[]>('filePatterns') ?? [
+    '.env',
+    '.env.local',
+    '.env.development',
+    '.envrc',
+    'application.properties',
+    'application.yml',
+    'application.yaml',
+    'application-*.properties',
+    'application-*.yml',
+    'application-*.yaml',
+    'appsettings.json',
+    'appsettings.*.json',
+    'config/*.exs'
+  ];
   
   const envFiles: string[] = [];
   
