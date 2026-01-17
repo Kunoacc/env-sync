@@ -8,6 +8,13 @@ dist/
 .envsync.json
 supabase/.env.local
 
+# Build artifacts
+packages/intellij-plugin/build/
+packages/intellij-plugin/.gradle/
+packages/intellij-plugin/.intellijPlatform/
+packages/vscode-extension/dist/
+packages/vscode-extension/coverage/
+
 # Lockfiles (bun regenerates on install)
 bun.lockb
 package-lock.json

@@ -1,0 +1,57 @@
+<idea-plugin>
+    <id>com.envsync.intellij</id>
+    <name>EnvSync</name>
+    <vendor email="support@envsync.dev" url="https://github.com/your-org/env-sync">EnvSync</vendor>
+    <description><![CDATA[
+        <p>Sync your <code>.env</code> files across projects via secure cloud storage.</p>
+        <ul>
+            <li><strong>Secure Storage</strong> - AES-256-GCM client-side encryption</li>
+            <li><strong>Version History</strong> - Track changes and restore previous versions</li>
+            <li><strong>Auto-Sync</strong> - Automatically push changes when files are modified</li>
+            <li><strong>Cross-Device Access</strong> - Access your env files from any machine</li>
+            <li><strong>VS Code Compatible</strong> - Same encryption, seamless switching</li>
+        </ul>
+        <p>Works with all JetBrains IDEs.</p>
+    ]]></description>
+    <change-notes><![CDATA[
+        <h3>0.1.0</h3>
+        <ul>
+            <li>Initial release</li>
+            <li>Magic link authentication</li>
+            <li>Push/Pull/Sync commands</li>
+            <li>Version history with restore</li>
+            <li>Auto-sync support</li>
+            <li>Status bar widget</li>
+        </ul>
+    ]]></change-notes>
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.envsync.settings.EnvSyncSettingsState"/>
+        <applicationService serviceImplementation="com.envsync.services.EnvSyncAuthService"/>
+        <applicationService serviceImplementation="com.envsync.api.EnvSyncApiClient"/>
+
+        <projectService serviceImplementation="com.envsync.services.EnvSyncProjectService"/>
+        <projectService serviceImplementation="com.envsync.services.EnvSyncHistoryService"/>
+        <projectService serviceImplementation="com.envsync.services.EnvSyncAutoSyncService"/>
+
+        <statusBarWidgetFactory implementation="com.envsync.ui.EnvSyncStatusBarWidgetFactory"/>
+        <toolWindow id="EnvSync History" anchor="right" factoryClass="com.envsync.ui.HistoryToolWindowFactory"/>
+        <applicationConfigurable instance="com.envsync.settings.EnvSyncConfigurable"/>
+        <notificationGroup id="EnvSync Notifications" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="EnvSyncGroup" text="EnvSync" description="EnvSync actions" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="EnvSync.Login" class="com.envsync.actions.LoginAction" text="EnvSync: Login"/>
+            <action id="EnvSync.Logout" class="com.envsync.actions.LogoutAction" text="EnvSync: Logout"/>
+            <separator/>
+            <action id="EnvSync.Sync" class="com.envsync.actions.SyncAction" text="EnvSync: Sync"/>
+            <action id="EnvSync.Push" class="com.envsync.actions.PushAction" text="EnvSync: Push to Cloud"/>
+            <action id="EnvSync.Pull" class="com.envsync.actions.PullAction" text="EnvSync: Pull from Cloud"/>
+            <separator/>
+            <action id="EnvSync.RefreshHistory" class="com.envsync.actions.RefreshHistoryAction" text="EnvSync: Refresh History"/>
+        </group>
+    </actions>
+</idea-plugin>

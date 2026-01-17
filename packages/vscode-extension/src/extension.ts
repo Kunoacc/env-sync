@@ -638,7 +638,21 @@ function setupFileWatchers(context: vscode.ExtensionContext) {
   
   if (!autoSync) return;
   
-  const patterns = config.get<string[]>('filePatterns') ?? ['.env', '.env.local', '.env.development'];
+  const patterns = config.get<string[]>('filePatterns') ?? [
+    '.env',
+    '.env.local',
+    '.env.development',
+    '.envrc',
+    'application.properties',
+    'application.yml',
+    'application.yaml',
+    'application-*.properties',
+    'application-*.yml',
+    'application-*.yaml',
+    'appsettings.json',
+    'appsettings.*.json',
+    'config/*.exs'
+  ];
   
   for (const pattern of patterns) {
     const fileWatcher = vscode.workspace.createFileSystemWatcher(`**/${pattern}`);

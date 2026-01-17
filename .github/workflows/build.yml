@@ -5,9 +5,12 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build & Test
+  build-vscode:
+    name: Build VS Code Extension
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/vscode-extension
     steps:
       - uses: actions/checkout@v4
       
@@ -32,3 +35,33 @@ jobs:
         
       - name: Package extension
         run: bun run package
+
+      - name: Run tests
+        run: bun run test
+
+  build-intellij:
+    name: Build IntelliJ Plugin
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/intellij-plugin
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build plugin
+        run: ./gradlew buildPlugin
+
+      - name: Run plugin tests
+        run: ./gradlew test
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: envsync-intellij
+          path: packages/intellij-plugin/build/distributions/*.zip
