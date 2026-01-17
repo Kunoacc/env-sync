@@ -1,7 +1,7 @@
 {
   "name": "env-sync-ng",
   "displayName": "EnvSync",
-  "version": "0.0.1",
+  "version": "0.2.1",
   "publisher": "kunoacc",
   "description": "Sync local .env files across projects securely via cloud storage with version history",
   "engines": {
