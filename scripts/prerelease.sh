@@ -69,10 +69,12 @@ bun install
 bun run tsc --noEmit
 bun run build
 bun run package
+bun run test
 popd >/dev/null
 
 pushd "$INTELLIJ_DIR" >/dev/null
 ./gradlew clean buildPlugin
+./gradlew test
 popd >/dev/null
 
 echo "Pre-release checks complete. Artifacts generated:" 

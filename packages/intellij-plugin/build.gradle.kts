@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
     kotlin("jvm") version "1.9.22"
     id("org.jetbrains.intellij.platform") version "2.2.1"
@@ -15,12 +17,15 @@ repositories {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("junit:junit:4.13.2")
     intellijPlatform {
         intellijIdeaCommunity("2024.3")
         bundledPlugin("com.intellij.java")
         pluginVerifier()
         zipSigner()
-        instrumentationTools()
+        testFramework(TestFrameworkType.Platform)
     }
 }
 
@@ -35,4 +40,8 @@ intellijPlatform {
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

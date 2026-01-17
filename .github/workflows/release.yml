@@ -74,9 +74,19 @@ jobs:
         run: bun run package
         working-directory: packages/vscode-extension
 
+      - name: Run VS Code tests
+        if: steps.check.outputs.released == 'false'
+        run: bun run test
+        working-directory: packages/vscode-extension
+
       - name: Build IntelliJ plugin
         if: steps.check.outputs.released == 'false'
         run: ./gradlew buildPlugin
+        working-directory: packages/intellij-plugin
+
+      - name: Run IntelliJ tests
+        if: steps.check.outputs.released == 'false'
+        run: ./gradlew test
         working-directory: packages/intellij-plugin
 
       - name: Create GitHub Release
