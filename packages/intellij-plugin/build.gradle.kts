@@ -11,7 +11,13 @@ version = "0.2.1"
 repositories {
     mavenCentral()
     intellijPlatform {
-        defaultRepositories()
+        localPlatformArtifacts()
+        jetbrainsRuntime()
+        jetbrainsIdeInstallers()
+        releases()
+        snapshots()
+        intellijDependencies()
+        marketplace()
     }
 }
 
